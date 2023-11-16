@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>경기버스 도착기록 열람</title>
+        <script type="module" src="./main.js"></script>
+        <link href="/main.css" rel="stylesheet" />
+    </head>
+    <body style="font-family: sans-serif;">
+        <div id="timetable" style="display: none; z-index: 1;">
+            <input type="date" id="sDay" name="sDay" min="2023-01-01" pattern="\d{4}-\d{2}-\d{2}"/>
+            <div class="column"></div>
+        </div>
+        <div id="main">
+            <h1>경기버스 도착기록 열람</h1>
+            <input type="text" id="keyword" name="keyword" required placeholder="노선 번호" />
+            <div id="result" class="column"></div>
+        </div>
+    </body>
+</html>
