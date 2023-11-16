@@ -36,18 +36,19 @@ const keywordSearch = async (_) => {
     else {
         const x = doc.querySelectorAll("busRouteList");
         x.forEach((one) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h;
+            var _a, _b, _c, _d, _e, _f, _g;
             if (!resultBox)
                 return;
-            var reg = new RegExp(`^([A-Za-z가-힣]*)${escapeRegExp(value)}([-A-Za-z가-힣]*|-[-0-9]*)$`, 'i');
+            var reg;
+            if (value.length == 1)
+                reg = new RegExp(`^([A-Za-z가-힣]*)${escapeRegExp(value)}([-A-Za-z가-힣]*|-[-0-9]*)$`, 'i');
+            else
+                reg = new RegExp(`${escapeRegExp(value)}`, 'i');
             if (!reg.test(`${(_a = one.querySelector("routeName")) === null || _a === void 0 ? void 0 : _a.innerHTML}`)) {
                 return;
             }
-            if (((_b = one.querySelector("districtCd")) === null || _b === void 0 ? void 0 : _b.innerHTML) != "2") {
-                return;
-            }
-            var exact = ((_c = one.querySelector("routeName")) === null || _c === void 0 ? void 0 : _c.innerHTML) === value;
-            tmp += `<div><p class="routeItem" data-route-id=${(_d = one.querySelector("routeId")) === null || _d === void 0 ? void 0 : _d.innerHTML}>${exact ? "<b>" : ""}${(_e = one.querySelector("routeName")) === null || _e === void 0 ? void 0 : _e.innerHTML}${exact ? "</b>" : ""} (${(_f = one.querySelector("routeTypeName")) === null || _f === void 0 ? void 0 : _f.innerHTML}): ${(_g = one.querySelector("stStaNm")) === null || _g === void 0 ? void 0 : _g.innerHTML} → ${(_h = one.querySelector("edStaNm")) === null || _h === void 0 ? void 0 : _h.innerHTML}</p></div>`;
+            var exact = ((_b = one.querySelector("routeName")) === null || _b === void 0 ? void 0 : _b.innerHTML) === value;
+            tmp += `<div><p class="routeItem" data-route-id=${(_c = one.querySelector("routeId")) === null || _c === void 0 ? void 0 : _c.innerHTML}>${exact ? "<b>" : ""}${(_d = one.querySelector("routeName")) === null || _d === void 0 ? void 0 : _d.innerHTML}${exact ? "</b>" : ""} (${(_e = one.querySelector("routeTypeName")) === null || _e === void 0 ? void 0 : _e.innerHTML}): ${(_f = one.querySelector("stStaNm")) === null || _f === void 0 ? void 0 : _f.innerHTML} → ${(_g = one.querySelector("edStaNm")) === null || _g === void 0 ? void 0 : _g.innerHTML}</p></div>`;
         });
     }
     resultBox.innerHTML = tmp;

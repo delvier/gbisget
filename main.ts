@@ -35,11 +35,12 @@ const keywordSearch = async (_?: Event) => {
         const x = doc.querySelectorAll("busRouteList");
         x.forEach((one) => {
             if (!resultBox) return;
-            var reg = new RegExp(`^([A-Za-z가-힣]*)${escapeRegExp(value)}([-A-Za-z가-힣]*|-[-0-9]*)$`, 'i');
+            var reg: RegExp;
+            if (value.length == 1) 
+                reg = new RegExp(`^([A-Za-z가-힣]*)${escapeRegExp(value)}([-A-Za-z가-힣]*|-[-0-9]*)$`, 'i');
+            else
+                reg = new RegExp(`${escapeRegExp(value)}`, 'i');
             if (! reg.test(`${one.querySelector("routeName")?.innerHTML}`)) {
-                return;
-            }
-            if (one.querySelector("districtCd")?.innerHTML != "2") {
                 return;
             }
             var exact = one.querySelector("routeName")?.innerHTML === value ;
