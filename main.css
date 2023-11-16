@@ -1,0 +1,60 @@
+html, body, #main {
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+}
+
+body {
+    display: flex;
+}
+
+a {
+    text-decoration: none;
+}
+
+#main {
+    padding: 8px;
+}
+
+#timetable {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: #fcfcfc;
+    border: 1px solid #808080;
+    border-radius: 10px;
+    align-items: center;
+    box-sizing: border-box;
+    margin: 48px;
+    overflow: scroll;
+    flex-direction: column;
+}
+
+#sDay {
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+}
+
+#timetable div, #result {
+    display: flex;
+    flex-direction: column;
+}
+
+#timetable div {
+    align-items: center;
+}
+
+.column {
+    width: 100%;
+}
+
+.column > div {
+    width: 100%;
+}
+
+.column > div:nth-child(odd) {
+    background: #dcdcdc;
+}
