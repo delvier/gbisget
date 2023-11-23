@@ -32,6 +32,15 @@ a {
     flex-direction: column;
 }
 
+#timetable-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(128, 128, 128, 0.5);
+}
+
 #sDay {
     flex-shrink: 0;
     position: sticky;
@@ -47,10 +56,17 @@ a {
     align-items: center;
 }
 
-.column {
+#timetable-top, .column {
     width: 100%;
 }
 
+.button-zone {
+    position: absolute;
+    top: 0;
+    right: 0;
+    flex-direction: column-reverse !important;
+    margin-right: 5px;
+}
 .column > div {
     width: 100%;
 }

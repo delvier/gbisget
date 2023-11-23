@@ -8,16 +8,21 @@ var mainBox = (document.getElementById("main") as HTMLElement);
 var keywordBox = (document.getElementById("keyword") as HTMLInputElement);
 var resultBox = (document.getElementById("result") as HTMLElement);
 var timetableBox = (document.getElementById("timetable") as HTMLElement);
+var timetableShadow = (document.getElementById("timetable-mask") as HTMLElement);
 var dateBox = (document.getElementById("sDay") as HTMLInputElement);
 var prevLoc = window.location.hash;
+var already: boolean = false; // Prevents hashchange loop
 const keywordSearch = async (_?: Event) => {
     var value = (keywordBox as HTMLInputElement).value.trim();
     if (!value) {
+        already = true;
         window.location.hash = "";
         (document.getElementById("result") as HTMLElement).innerHTML = "";
         return;
     }
     timetableBox.style.display = "none";
+    timetableShadow.style.display = "none";
+    already = true;
     prevLoc = window.location.hash = `#/search/${value}`;
     var t = Date.now();
     resultBox.innerHTML = "<p>Loading...</p>";
@@ -57,11 +62,16 @@ const routeStopList = async (_?: Event, id?: String) => {
     const routeId = id || (_?.target as HTMLElement).dataset.routeId || "";
     if (routeId === "") return;
     timetableBox.style.display = "none";
+    timetableShadow.style.display = "none";
+    already = true;
     prevLoc = window.location.hash = `#/route/${routeId}`;
     resultBox.innerHTML = "<p>Loading...</p>";
     const info = await gbis.info(routeId);
     const doc = await gbis.station(routeId);
     var tmp = ``;
+    if (keywordBox.value == "") {
+        keywordBox.value = info.querySelector("routeName")?.innerHTML || "";
+    };
     tmp += `<div id="routeInfo"><h2>${info.querySelector("routeName")?.innerHTML} (${info.querySelector("routeTypeName")?.innerHTML}): ${info.querySelector("startStationName")?.innerHTML} → ${info.querySelector("endStationName")?.innerHTML}</h2></div>`;
     const x = doc.querySelectorAll("busRouteStationList");
     x.forEach((one) => {
@@ -85,7 +95,9 @@ const routeStopHistory = async (_?: Event, rid?: String, sid?: String, sord?: St
         routeStopList(_, routeId);
     }
     timetableBox.style.display = "flex";
-    prevLoc = window.location.hash = `#/route/${routeId}`;
+    timetableShadow.style.display = "block";
+    prevLoc = `#/route/${routeId}`;
+    already = true;
     window.location.hash = `#/history/${routeId}/${stationId}/${staOrder}/${sDay}`;
     (timetableBox.lastElementChild as Element).innerHTML = "<p>Loading...</p>";
     const doc = await gbis.pastarrival(sDay, routeId, stationId, staOrder);
@@ -96,11 +108,7 @@ const routeStopHistory = async (_?: Event, rid?: String, sid?: String, sord?: St
         tmp += `<div class="pastArrivalItem" data-veh-id=${one.querySelector("vehId")?.innerHTML}>${arr.split(" ")[1]}</div>`;
     });
     (timetableBox.lastElementChild as Element).innerHTML = tmp;
-    mainBox.addEventListener("click", function closeTimetable (_) {
-        timetableBox.style.display = "none";
-        mainBox.removeEventListener("click", closeTimetable);
-        window.location.hash = prevLoc;
-    });
+    timetableShadow.addEventListener("click", closeTimetable);
 }
 dateBox.addEventListener("change", (_) => {
     var params = window.location.hash.split("/");
@@ -137,18 +145,28 @@ const initiator = async (_?: Event) => {
                 date = params[5];
             await routeStopHistory(_, rid, sid, sord, date);
         } else {
+            already = true;
             window.location.hash = "";
         }
     }
 }
-//window.addEventListener("hashchange", (_) => {
-//    console.log(_.oldURL);
-//    console.log(_.newURL);
-//    initiator(_);
-//});
+window.addEventListener("hashchange", (_) => {
+    if (!already) initiator(_);
+    else already = false;
+});
 document.querySelector("h1")?.addEventListener("click", (_) => {
+    already = true;
     window.location.hash = "";
     keywordBox.value = "";
     resultBox.innerHTML = "";
 });
+const closeTimetable = (_: Event) => {
+    timetableBox.style.display = "none";
+    timetableShadow.style.display = "none";
+    timetableShadow.removeEventListener("click", closeTimetable);
+    already = true;
+    window.location.hash = prevLoc;
+}
+document.getElementById("timetable-close")?.addEventListener("click", closeTimetable);
+
 initiator();

@@ -1,4 +1,4 @@
-var _a;
+var _a, _b;
 import * as gbis from "./gbis.js";
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
@@ -8,17 +8,22 @@ var mainBox = document.getElementById("main");
 var keywordBox = document.getElementById("keyword");
 var resultBox = document.getElementById("result");
 var timetableBox = document.getElementById("timetable");
+var timetableShadow = document.getElementById("timetable-mask");
 var dateBox = document.getElementById("sDay");
 var prevLoc = window.location.hash;
+var already = false; // Prevents hashchange loop
 const keywordSearch = async (_) => {
     var _a, _b;
     var value = keywordBox.value.trim();
     if (!value) {
+        already = true;
         window.location.hash = "";
         document.getElementById("result").innerHTML = "";
         return;
     }
     timetableBox.style.display = "none";
+    timetableShadow.style.display = "none";
+    already = true;
     prevLoc = window.location.hash = `#/search/${value}`;
     var t = Date.now();
     resultBox.innerHTML = "<p>Loading...</p>";
@@ -58,17 +63,23 @@ const keywordSearch = async (_) => {
     }
 };
 const routeStopList = async (_, id) => {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     const routeId = id || (_ === null || _ === void 0 ? void 0 : _.target).dataset.routeId || "";
     if (routeId === "")
         return;
     timetableBox.style.display = "none";
+    timetableShadow.style.display = "none";
+    already = true;
     prevLoc = window.location.hash = `#/route/${routeId}`;
     resultBox.innerHTML = "<p>Loading...</p>";
     const info = await gbis.info(routeId);
     const doc = await gbis.station(routeId);
     var tmp = ``;
-    tmp += `<div id="routeInfo"><h2>${(_a = info.querySelector("routeName")) === null || _a === void 0 ? void 0 : _a.innerHTML} (${(_b = info.querySelector("routeTypeName")) === null || _b === void 0 ? void 0 : _b.innerHTML}): ${(_c = info.querySelector("startStationName")) === null || _c === void 0 ? void 0 : _c.innerHTML} → ${(_d = info.querySelector("endStationName")) === null || _d === void 0 ? void 0 : _d.innerHTML}</h2></div>`;
+    if (keywordBox.value == "") {
+        keywordBox.value = ((_a = info.querySelector("routeName")) === null || _a === void 0 ? void 0 : _a.innerHTML) || "";
+    }
+    ;
+    tmp += `<div id="routeInfo"><h2>${(_b = info.querySelector("routeName")) === null || _b === void 0 ? void 0 : _b.innerHTML} (${(_c = info.querySelector("routeTypeName")) === null || _c === void 0 ? void 0 : _c.innerHTML}): ${(_d = info.querySelector("startStationName")) === null || _d === void 0 ? void 0 : _d.innerHTML} → ${(_e = info.querySelector("endStationName")) === null || _e === void 0 ? void 0 : _e.innerHTML}</h2></div>`;
     const x = doc.querySelectorAll("busRouteStationList");
     x.forEach((one) => {
         var _a, _b, _c, _d, _e, _f;
@@ -94,7 +105,9 @@ const routeStopHistory = async (_, rid, sid, sord, date) => {
         routeStopList(_, routeId);
     }
     timetableBox.style.display = "flex";
-    prevLoc = window.location.hash = `#/route/${routeId}`;
+    timetableShadow.style.display = "block";
+    prevLoc = `#/route/${routeId}`;
+    already = true;
     window.location.hash = `#/history/${routeId}/${stationId}/${staOrder}/${sDay}`;
     timetableBox.lastElementChild.innerHTML = "<p>Loading...</p>";
     const doc = await gbis.pastarrival(sDay, routeId, stationId, staOrder);
@@ -106,11 +119,7 @@ const routeStopHistory = async (_, rid, sid, sord, date) => {
         tmp += `<div class="pastArrivalItem" data-veh-id=${(_b = one.querySelector("vehId")) === null || _b === void 0 ? void 0 : _b.innerHTML}>${arr.split(" ")[1]}</div>`;
     });
     timetableBox.lastElementChild.innerHTML = tmp;
-    mainBox.addEventListener("click", function closeTimetable(_) {
-        timetableBox.style.display = "none";
-        mainBox.removeEventListener("click", closeTimetable);
-        window.location.hash = prevLoc;
-    });
+    timetableShadow.addEventListener("click", closeTimetable);
 };
 dateBox.addEventListener("change", (_) => {
     var params = window.location.hash.split("/");
@@ -150,18 +159,29 @@ const initiator = async (_) => {
             await routeStopHistory(_, rid, sid, sord, date);
         }
         else {
+            already = true;
             window.location.hash = "";
         }
     }
 };
-//window.addEventListener("hashchange", (_) => {
-//    console.log(_.oldURL);
-//    console.log(_.newURL);
-//    initiator(_);
-//});
+window.addEventListener("hashchange", (_) => {
+    if (!already)
+        initiator(_);
+    else
+        already = false;
+});
 (_a = document.querySelector("h1")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", (_) => {
+    already = true;
     window.location.hash = "";
     keywordBox.value = "";
     resultBox.innerHTML = "";
 });
+const closeTimetable = (_) => {
+    timetableBox.style.display = "none";
+    timetableShadow.style.display = "none";
+    timetableShadow.removeEventListener("click", closeTimetable);
+    already = true;
+    window.location.hash = prevLoc;
+};
+(_b = document.getElementById("timetable-close")) === null || _b === void 0 ? void 0 : _b.addEventListener("click", closeTimetable);
 initiator();
