@@ -147,7 +147,7 @@ const stopRouteList = async (_?: Event, id?: String) => {
     const sDay = dateBox.value || "";
     x.forEach((one) => {
         if (!resultBox) return;
-        tmp += `<div class="stopItem" data-route-id=${one.querySelector("routeId")?.innerHTML} data-station-id=${stationId} data-station-seq=${one.querySelector("stationSeq")?.innerHTML}><a href="#/history/${one.querySelector("routeId")?.innerHTML}/${stationId}/${one.querySelector("stationSeq")?.innerHTML}/${sDay}">${one.querySelector("stationName")?.innerHTML} ${mobileCode ? `(${mobileCode})` : ``}</a> <a href="geo:${one.querySelector("y")?.innerHTML},${one.querySelector("x")?.innerHTML}">📍</a></div>`
+        tmp += `<div class="stopItem" data-route-id=${one.querySelector("routeId")?.innerHTML} data-station-id=${stationId} data-station-seq=${one.querySelector("stationSeq")?.innerHTML}><a href="#/history/${one.querySelector("routeId")?.innerHTML}/${stationId}/${one.querySelector("stationSeq")?.innerHTML}/${sDay}">${one.querySelector("routeName")?.innerHTML} (→ ${one.querySelector("routeDestName")?.innerHTML})</a></div>`
     });
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stopItem");
@@ -194,6 +194,15 @@ keywordBox.addEventListener("keydown", (_) => {
         else routeSearch(_);
     }
 });
+searchMode.addEventListener("change", (_) => {
+    if (searchMode.checked) {
+        keywordBox.setAttribute("placeholder", "정류소");
+        stopSearch(_);
+    } else {
+        keywordBox.setAttribute("placeholder", "노선 번호");
+        routeSearch(_);
+    }
+})
 const initiator = async (_?: Event) => {
     already = true;
     var d = new Date();
@@ -240,13 +249,6 @@ window.addEventListener("hashchange", (_) => {
     if (!already) initiator(_);
     else already = false;
 });
-searchMode.addEventListener("change", (_) => {
-    if (searchMode.checked) {
-        keywordBox.setAttribute("placeholder", "정류소");
-    } else {
-        keywordBox.setAttribute("placeholder", "노선 번호");
-    }
-})
 document.querySelector("h1")?.addEventListener("click", (_) => {
     already = true;
     window.location.hash = "";

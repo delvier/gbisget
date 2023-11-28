@@ -166,10 +166,10 @@ const stopRouteList = async (_, id) => {
     const x = doc.querySelectorAll("busRouteList");
     const sDay = dateBox.value || "";
     x.forEach((one) => {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f;
         if (!resultBox)
             return;
-        tmp += `<div class="stopItem" data-route-id=${(_a = one.querySelector("routeId")) === null || _a === void 0 ? void 0 : _a.innerHTML} data-station-id=${stationId} data-station-seq=${(_b = one.querySelector("stationSeq")) === null || _b === void 0 ? void 0 : _b.innerHTML}><a href="#/history/${(_c = one.querySelector("routeId")) === null || _c === void 0 ? void 0 : _c.innerHTML}/${stationId}/${(_d = one.querySelector("stationSeq")) === null || _d === void 0 ? void 0 : _d.innerHTML}/${sDay}">${(_e = one.querySelector("stationName")) === null || _e === void 0 ? void 0 : _e.innerHTML} ${mobileCode ? `(${mobileCode})` : ``}</a> <a href="geo:${(_f = one.querySelector("y")) === null || _f === void 0 ? void 0 : _f.innerHTML},${(_g = one.querySelector("x")) === null || _g === void 0 ? void 0 : _g.innerHTML}">📍</a></div>`;
+        tmp += `<div class="stopItem" data-route-id=${(_a = one.querySelector("routeId")) === null || _a === void 0 ? void 0 : _a.innerHTML} data-station-id=${stationId} data-station-seq=${(_b = one.querySelector("stationSeq")) === null || _b === void 0 ? void 0 : _b.innerHTML}><a href="#/history/${(_c = one.querySelector("routeId")) === null || _c === void 0 ? void 0 : _c.innerHTML}/${stationId}/${(_d = one.querySelector("stationSeq")) === null || _d === void 0 ? void 0 : _d.innerHTML}/${sDay}">${(_e = one.querySelector("routeName")) === null || _e === void 0 ? void 0 : _e.innerHTML} (→ ${(_f = one.querySelector("routeDestName")) === null || _f === void 0 ? void 0 : _f.innerHTML})</a></div>`;
     });
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stopItem");
@@ -221,6 +221,16 @@ keywordBox.addEventListener("keydown", (_) => {
             stopSearch(_);
         else
             routeSearch(_);
+    }
+});
+searchMode.addEventListener("change", (_) => {
+    if (searchMode.checked) {
+        keywordBox.setAttribute("placeholder", "정류소");
+        stopSearch(_);
+    }
+    else {
+        keywordBox.setAttribute("placeholder", "노선 번호");
+        routeSearch(_);
     }
 });
 const initiator = async (_) => {
@@ -275,14 +285,6 @@ window.addEventListener("hashchange", (_) => {
         initiator(_);
     else
         already = false;
-});
-searchMode.addEventListener("change", (_) => {
-    if (searchMode.checked) {
-        keywordBox.setAttribute("placeholder", "정류소");
-    }
-    else {
-        keywordBox.setAttribute("placeholder", "노선 번호");
-    }
 });
 (_a = document.querySelector("h1")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", (_) => {
     already = true;
