@@ -197,7 +197,7 @@ const routeStopHistory = async (_, rid, sid, sord, date) => {
     }
     timetableBox.style.display = "flex";
     timetableShadow.style.display = "block";
-    prevLoc = prevLoc ? prevLoc : `#/route/${routeId}`;
+    prevLoc = (prevLoc !== window.location.hash) ? prevLoc : `#/route/${routeId}`;
     already = true;
     timetableBox.lastElementChild.innerHTML = "<p>Loading...</p>";
     const doc = await gbis.pastarrival(sDay, routeId, stationId, staOrder);
@@ -213,20 +213,25 @@ const routeStopHistory = async (_, rid, sid, sord, date) => {
 };
 dateBox.addEventListener("change", (_) => {
     var params = window.location.hash.split("/");
-    routeStopHistory(_, params[2], params[3], params[4], dateBox.value);
+    //routeStopHistory(_, params[2], params[3], params[4], dateBox.value);
+    window.location.hash = `#/${params[2]}/${params[3]}/${params[4]}/${dateBox.value}`;
 });
 keywordBox.addEventListener("input", (_) => {
-    if (searchMode.checked)
-        stopSearch(_);
-    else
-        routeSearch(_);
+    if (searchMode.checked) {
+        window.location.hash = `#/s-search/${keywordBox.value}`;
+    }
+    else {
+        window.location.hash = `#/search/${keywordBox.value}`;
+    }
 });
 keywordBox.addEventListener("keydown", (_) => {
     if (_.key == "Enter") {
-        if (searchMode.checked)
-            stopSearch(_);
-        else
-            routeSearch(_);
+        if (searchMode.checked) {
+            window.location.hash = `#/s-search/${keywordBox.value}`;
+        }
+        else {
+            window.location.hash = `#/search/${keywordBox.value}`;
+        }
     }
 });
 searchMode.addEventListener("change", (_) => {
@@ -282,6 +287,8 @@ const initiator = async (_) => {
         else {
             already = true;
             window.location.hash = "";
+            keywordBox.value = "";
+            resultBox.innerHTML = "";
         }
     }
 };
