@@ -6,13 +6,14 @@ function escapeRegExp(string: string) {
 var searchTime: number = 0;  
 var mainBox = (document.getElementById("main") as HTMLElement);
 var keywordBox = (document.getElementById("keyword") as HTMLInputElement);
+var searchMode = (document.getElementById("isStation") as HTMLInputElement);
 var resultBox = (document.getElementById("result") as HTMLElement);
 var timetableBox = (document.getElementById("timetable") as HTMLElement);
 var timetableShadow = (document.getElementById("timetable-mask") as HTMLElement);
 var dateBox = (document.getElementById("sDay") as HTMLInputElement);
 var prevLoc = window.location.hash;
 var already: boolean = false; // Prevents hashchange loop
-const keywordSearch = async (_?: Event) => {
+const routeSearch = async (_?: Event) => {
     var value = (keywordBox as HTMLInputElement).value.trim();
     if (!value) {
         already = true;
@@ -26,7 +27,7 @@ const keywordSearch = async (_?: Event) => {
     prevLoc = window.location.hash = `#/search/${value}`;
     var t = Date.now();
     resultBox.innerHTML = "<p>Loading...</p>";
-    const doc = await gbis.main(value);
+    const doc = await gbis.routeMain(value);
     if (searchTime > t) {
         return;
     } else {
@@ -66,8 +67,8 @@ const routeStopList = async (_?: Event, id?: String) => {
     already = true;
     prevLoc = window.location.hash = `#/route/${routeId}`;
     resultBox.innerHTML = "<p>Loading...</p>";
-    const info = await gbis.info(routeId);
-    const doc = await gbis.station(routeId);
+    const info = await gbis.routeInfo(routeId);
+    const doc = await gbis.routeStation(routeId);
     var tmp = ``;
     if (keywordBox.value == "") {
         keywordBox.value = info.querySelector("routeName")?.innerHTML || "";
@@ -78,6 +79,80 @@ const routeStopList = async (_?: Event, id?: String) => {
         if (!resultBox) return;
         const mobileCode = one.querySelector("mobileNo")?.innerHTML;
         tmp += `<div><p class="stopItem" data-route-id=${routeId} data-station-id=${one.querySelector("stationId")?.innerHTML} data-station-seq=${one.querySelector("stationSeq")?.innerHTML}>${one.querySelector("stationName")?.innerHTML} ${mobileCode ? `(${mobileCode})` : ``} <a href="geo:${one.querySelector("y")?.innerHTML},${one.querySelector("x")?.innerHTML}">📍</a></p></div>`;
+    });
+    resultBox.innerHTML = tmp;
+    var links = resultBox.getElementsByClassName("stopItem");
+    for (const link of links) {
+        link.addEventListener("click", routeStopHistory);
+    }
+}
+const stopSearch = async (_?: Event) => {
+    var value = (keywordBox as HTMLInputElement).value.trim();
+    if (!value) {
+        already = true;
+        window.location.hash = "";
+        (document.getElementById("result") as HTMLElement).innerHTML = "";
+        return;
+    }
+    timetableBox.style.display = "none";
+    timetableShadow.style.display = "none";
+    already = true;
+    prevLoc = window.location.hash = `#/s-search/${value}`;
+    var t = Date.now();
+    resultBox.innerHTML = "<p>Loading...</p>";
+    const doc = await gbis.stationMain(value);
+    if (searchTime > t) {
+        return;
+    } else {
+        searchTime = t;
+    }
+    var tmp = ``;
+    if (doc.querySelector("resultCode")?.innerHTML != "0") {
+        tmp += doc.querySelector("resultMessage")?.innerHTML;
+    }
+    else {
+        const x = doc.querySelectorAll("busStationList");
+        x.forEach((one) => {
+            if (!resultBox) return;
+            //var reg: RegExp;
+            //if (value.length == 1) 
+            //    reg = new RegExp(`^([A-Za-z가-힣]*)${escapeRegExp(value)}([-A-Za-z가-힣]*|-[-0-9]*)$`, 'i');
+            //else
+            //reg = new RegExp(`${escapeRegExp(value)}`, 'i');
+            //if (! reg.test(`${one.querySelector("routeName")?.innerHTML}`)) {
+            //    return;
+            //}
+            var exact = one.querySelector("stationName")?.innerHTML === value ;
+            const mobileCode = one.querySelector("mobileNo")?.innerHTML;
+            tmp += `<div><p class="stationItem" data-station-id=${one.querySelector("stationId")?.innerHTML}>${exact ? "<b>" : ""}${one.querySelector("stationName")?.innerHTML}${exact ? "</b>" : ""} (${one.querySelector("regionName")?.innerHTML}${mobileCode ? `: ${mobileCode}` : ``})</p></div>`;
+        });
+    }
+    resultBox.innerHTML = tmp;
+    var links = resultBox.getElementsByClassName("stationItem");
+    for (const link of links) {
+        link.addEventListener("click", stopRouteList);
+    }
+}
+const stopRouteList = async (_?: Event, id?: String) => {
+    const stationId = id || (_?.target as HTMLElement).dataset.stationId || "";
+    if (stationId === "") return;
+    timetableBox.style.display = "none";
+    timetableShadow.style.display = "none";
+    already = true;
+    prevLoc = window.location.hash = `#/station/${stationId}`;
+    resultBox.innerHTML = "<p>Loading...</p>";
+    const info = await gbis.stationInfo(stationId);
+    const doc = await gbis.stationRoute(stationId);
+    var tmp = ``;
+    if (keywordBox.value == "") {
+        keywordBox.value = info.querySelector("stationName")?.innerHTML || "";
+    };
+    const mobileCode = info.querySelector("mobileNo")?.innerHTML;
+    tmp += `<div id="stationInfo"><h2>${info.querySelector("stationName")?.innerHTML} (${info.querySelector("regionName")?.innerHTML}${mobileCode ? `: ${mobileCode}` : ``}) <a href="geo:${info.querySelector("y")?.innerHTML},${info.querySelector("x")?.innerHTML}">📍</a></h2></div>`;
+    const x = doc.querySelectorAll("busRouteList");
+    x.forEach((one) => {
+        if (!resultBox) return;
+        tmp += `<div><p class="stopItem" data-route-id=${one.querySelector("routeId")?.innerHTML} data-station-id=${stationId} data-station-seq=${one.querySelector("staOrder")?.innerHTML}>${one.querySelector("routeName")?.innerHTML} (→ ${one.querySelector("routeDestName")?.innerHTML})</p></div>`;
     });
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stopItem");
@@ -96,7 +171,7 @@ const routeStopHistory = async (_?: Event, rid?: String, sid?: String, sord?: St
     }
     timetableBox.style.display = "flex";
     timetableShadow.style.display = "block";
-    prevLoc = `#/route/${routeId}`;
+    prevLoc = prevLoc ? prevLoc : `#/route/${routeId}`;
     already = true;
     window.location.hash = `#/history/${routeId}/${stationId}/${staOrder}/${sDay}`;
     (timetableBox.lastElementChild as Element).innerHTML = "<p>Loading...</p>";
@@ -114,10 +189,14 @@ dateBox.addEventListener("change", (_) => {
     var params = window.location.hash.split("/");
     routeStopHistory(_, params[2], params[3], params[4], dateBox.value);
 });
-keywordBox.addEventListener("input", keywordSearch);
+keywordBox.addEventListener("input", (_) => {
+    if (searchMode.checked) stopSearch(_);
+    else routeSearch(_);
+});
 keywordBox.addEventListener("keydown", (_) => {
     if (_.key == "Enter") {
-        keywordSearch(_);
+        if (searchMode.checked) stopSearch(_);
+        else routeSearch(_);
     }
 });
 const initiator = async (_?: Event) => {
@@ -128,12 +207,23 @@ const initiator = async (_?: Event) => {
     if (window.location.hash.startsWith("#/")) {
         var params = window.location.hash.split("/");
         if (params[1] === "search") {
-            var value = params[2];
+            var value = decodeURI(params[2]);
             keywordBox.value = value;
-            await keywordSearch();
+            await routeSearch();
+        } else if (params[1] === "s-search") {
+            var value = decodeURI(params[2]);
+            searchMode.checked = true;
+            keywordBox.setAttribute("placeholder", "정류소");
+            keywordBox.value = value;
+            await stopSearch();
         } else if (params[1] === "route") {
             var value = params[2];
             await routeStopList(_, value);
+        } else if (params[1] === "station") {
+            var value = params[2];
+            searchMode.checked = true;
+            keywordBox.setAttribute("placeholder", "정류소");
+            await stopRouteList(_, value);
         } else if (params[1] === "history" && params.length > 4) {
             var rid = params[2];
             var sid = params[3];
@@ -154,6 +244,13 @@ window.addEventListener("hashchange", (_) => {
     if (!already) initiator(_);
     else already = false;
 });
+searchMode.addEventListener("change", (_) => {
+    if (searchMode.checked) {
+        keywordBox.setAttribute("placeholder", "정류소");
+    } else {
+        keywordBox.setAttribute("placeholder", "노선 번호");
+    }
+})
 document.querySelector("h1")?.addEventListener("click", (_) => {
     already = true;
     window.location.hash = "";
