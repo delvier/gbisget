@@ -24,7 +24,8 @@ const routeSearch = async (_) => {
     }
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    already = true;
+    if (_)
+        already = true;
     prevLoc = window.location.hash = `#/search/${value}`;
     var t = Date.now();
     resultBox.innerHTML = "<p>Loading...</p>";
@@ -42,7 +43,7 @@ const routeSearch = async (_) => {
     else {
         const x = doc.querySelectorAll("busRouteList");
         x.forEach((one) => {
-            var _a, _b, _c, _d, _e, _f, _g;
+            var _a, _b, _c, _d, _e, _f, _g, _h;
             if (!resultBox)
                 return;
             var reg;
@@ -54,7 +55,7 @@ const routeSearch = async (_) => {
                 return;
             }
             var exact = ((_b = one.querySelector("routeName")) === null || _b === void 0 ? void 0 : _b.innerHTML) === value;
-            tmp += `<div><p class="routeItem" data-route-id=${(_c = one.querySelector("routeId")) === null || _c === void 0 ? void 0 : _c.innerHTML}>${exact ? "<b>" : ""}${(_d = one.querySelector("routeName")) === null || _d === void 0 ? void 0 : _d.innerHTML}${exact ? "</b>" : ""} (${(_e = one.querySelector("routeTypeName")) === null || _e === void 0 ? void 0 : _e.innerHTML}): ${(_f = one.querySelector("stStaNm")) === null || _f === void 0 ? void 0 : _f.innerHTML} → ${(_g = one.querySelector("edStaNm")) === null || _g === void 0 ? void 0 : _g.innerHTML}</p></div>`;
+            tmp += `<div class="routeItem" data-route-id=${(_c = one.querySelector("routeId")) === null || _c === void 0 ? void 0 : _c.innerHTML}><a href="#/route/${(_d = one.querySelector("routeId")) === null || _d === void 0 ? void 0 : _d.innerHTML}">${exact ? "<b>" : ""}${(_e = one.querySelector("routeName")) === null || _e === void 0 ? void 0 : _e.innerHTML}${exact ? "</b>" : ""} (${(_f = one.querySelector("routeTypeName")) === null || _f === void 0 ? void 0 : _f.innerHTML}): ${(_g = one.querySelector("stStaNm")) === null || _g === void 0 ? void 0 : _g.innerHTML} → ${(_h = one.querySelector("edStaNm")) === null || _h === void 0 ? void 0 : _h.innerHTML}</a></div>`;
         });
     }
     resultBox.innerHTML = tmp;
@@ -63,15 +64,17 @@ const routeSearch = async (_) => {
         link.addEventListener("click", routeStopList);
     }
 };
-const routeStopList = async (_, id) => {
+const routeStopList = async (_, id, silent) => {
     var _a, _b, _c, _d, _e;
     const routeId = id || (_ === null || _ === void 0 ? void 0 : _.target).dataset.routeId || "";
     if (routeId === "")
         return;
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    already = true;
-    prevLoc = window.location.hash = `#/route/${routeId}`;
+    if (_)
+        already = true;
+    if (!silent)
+        prevLoc = window.location.hash = `#/route/${routeId}`;
     resultBox.innerHTML = "<p>Loading...</p>";
     const info = await gbis.routeInfo(routeId);
     const doc = await gbis.routeStation(routeId);
@@ -82,12 +85,13 @@ const routeStopList = async (_, id) => {
     ;
     tmp += `<div id="routeInfo"><h2>${(_b = info.querySelector("routeName")) === null || _b === void 0 ? void 0 : _b.innerHTML} (${(_c = info.querySelector("routeTypeName")) === null || _c === void 0 ? void 0 : _c.innerHTML}): ${(_d = info.querySelector("startStationName")) === null || _d === void 0 ? void 0 : _d.innerHTML} → ${(_e = info.querySelector("endStationName")) === null || _e === void 0 ? void 0 : _e.innerHTML}</h2></div>`;
     const x = doc.querySelectorAll("busRouteStationList");
+    const sDay = dateBox.value || "";
     x.forEach((one) => {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         if (!resultBox)
             return;
         const mobileCode = (_a = one.querySelector("mobileNo")) === null || _a === void 0 ? void 0 : _a.innerHTML;
-        tmp += `<div><p class="stopItem" data-route-id=${routeId} data-station-id=${(_b = one.querySelector("stationId")) === null || _b === void 0 ? void 0 : _b.innerHTML} data-station-seq=${(_c = one.querySelector("stationSeq")) === null || _c === void 0 ? void 0 : _c.innerHTML}>${(_d = one.querySelector("stationName")) === null || _d === void 0 ? void 0 : _d.innerHTML} ${mobileCode ? `(${mobileCode})` : ``} <a href="geo:${(_e = one.querySelector("y")) === null || _e === void 0 ? void 0 : _e.innerHTML},${(_f = one.querySelector("x")) === null || _f === void 0 ? void 0 : _f.innerHTML}">📍</a></p></div>`;
+        tmp += `<div class="stopItem" data-route-id=${routeId} data-station-id=${(_b = one.querySelector("stationId")) === null || _b === void 0 ? void 0 : _b.innerHTML} data-station-seq=${(_c = one.querySelector("stationSeq")) === null || _c === void 0 ? void 0 : _c.innerHTML}><a href="#/history/${routeId}/${(_d = one.querySelector("stationId")) === null || _d === void 0 ? void 0 : _d.innerHTML}/${(_e = one.querySelector("stationSeq")) === null || _e === void 0 ? void 0 : _e.innerHTML}/${sDay}">${(_f = one.querySelector("stationName")) === null || _f === void 0 ? void 0 : _f.innerHTML} ${mobileCode ? `(${mobileCode})` : ``}</a> <a href="geo:${(_g = one.querySelector("y")) === null || _g === void 0 ? void 0 : _g.innerHTML},${(_h = one.querySelector("x")) === null || _h === void 0 ? void 0 : _h.innerHTML}">📍</a></div>`;
     });
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stopItem");
@@ -106,7 +110,8 @@ const stopSearch = async (_) => {
     }
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    already = true;
+    if (_)
+        already = true;
     prevLoc = window.location.hash = `#/s-search/${value}`;
     var t = Date.now();
     resultBox.innerHTML = "<p>Loading...</p>";
@@ -124,20 +129,12 @@ const stopSearch = async (_) => {
     else {
         const x = doc.querySelectorAll("busStationList");
         x.forEach((one) => {
-            var _a, _b, _c, _d, _e;
+            var _a, _b, _c, _d, _e, _f;
             if (!resultBox)
                 return;
-            //var reg: RegExp;
-            //if (value.length == 1) 
-            //    reg = new RegExp(`^([A-Za-z가-힣]*)${escapeRegExp(value)}([-A-Za-z가-힣]*|-[-0-9]*)$`, 'i');
-            //else
-            //reg = new RegExp(`${escapeRegExp(value)}`, 'i');
-            //if (! reg.test(`${one.querySelector("routeName")?.innerHTML}`)) {
-            //    return;
-            //}
             var exact = ((_a = one.querySelector("stationName")) === null || _a === void 0 ? void 0 : _a.innerHTML) === value;
             const mobileCode = (_b = one.querySelector("mobileNo")) === null || _b === void 0 ? void 0 : _b.innerHTML;
-            tmp += `<div><p class="stationItem" data-station-id=${(_c = one.querySelector("stationId")) === null || _c === void 0 ? void 0 : _c.innerHTML}>${exact ? "<b>" : ""}${(_d = one.querySelector("stationName")) === null || _d === void 0 ? void 0 : _d.innerHTML}${exact ? "</b>" : ""} (${(_e = one.querySelector("regionName")) === null || _e === void 0 ? void 0 : _e.innerHTML}${mobileCode ? `: ${mobileCode}` : ``})</p></div>`;
+            tmp += `<div class="stationItem" data-station-id=${(_c = one.querySelector("stationId")) === null || _c === void 0 ? void 0 : _c.innerHTML}><a href="#/station/${(_d = one.querySelector("stationId")) === null || _d === void 0 ? void 0 : _d.innerHTML}">${exact ? "<b>" : ""}${(_e = one.querySelector("stationName")) === null || _e === void 0 ? void 0 : _e.innerHTML}${exact ? "</b>" : ""} (${(_f = one.querySelector("regionName")) === null || _f === void 0 ? void 0 : _f.innerHTML}${mobileCode ? `: ${mobileCode}` : ``})</a></div>`;
         });
     }
     resultBox.innerHTML = tmp;
@@ -153,7 +150,8 @@ const stopRouteList = async (_, id) => {
         return;
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    already = true;
+    if (_)
+        already = true;
     prevLoc = window.location.hash = `#/station/${stationId}`;
     resultBox.innerHTML = "<p>Loading...</p>";
     const info = await gbis.stationInfo(stationId);
@@ -166,11 +164,12 @@ const stopRouteList = async (_, id) => {
     const mobileCode = (_b = info.querySelector("mobileNo")) === null || _b === void 0 ? void 0 : _b.innerHTML;
     tmp += `<div id="stationInfo"><h2>${(_c = info.querySelector("stationName")) === null || _c === void 0 ? void 0 : _c.innerHTML} (${(_d = info.querySelector("regionName")) === null || _d === void 0 ? void 0 : _d.innerHTML}${mobileCode ? `: ${mobileCode}` : ``}) <a href="geo:${(_e = info.querySelector("y")) === null || _e === void 0 ? void 0 : _e.innerHTML},${(_f = info.querySelector("x")) === null || _f === void 0 ? void 0 : _f.innerHTML}">📍</a></h2></div>`;
     const x = doc.querySelectorAll("busRouteList");
+    const sDay = dateBox.value || "";
     x.forEach((one) => {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f, _g;
         if (!resultBox)
             return;
-        tmp += `<div><p class="stopItem" data-route-id=${(_a = one.querySelector("routeId")) === null || _a === void 0 ? void 0 : _a.innerHTML} data-station-id=${stationId} data-station-seq=${(_b = one.querySelector("staOrder")) === null || _b === void 0 ? void 0 : _b.innerHTML}>${(_c = one.querySelector("routeName")) === null || _c === void 0 ? void 0 : _c.innerHTML} (→ ${(_d = one.querySelector("routeDestName")) === null || _d === void 0 ? void 0 : _d.innerHTML})</p></div>`;
+        tmp += `<div class="stopItem" data-route-id=${(_a = one.querySelector("routeId")) === null || _a === void 0 ? void 0 : _a.innerHTML} data-station-id=${stationId} data-station-seq=${(_b = one.querySelector("stationSeq")) === null || _b === void 0 ? void 0 : _b.innerHTML}><a href="#/history/${(_c = one.querySelector("routeId")) === null || _c === void 0 ? void 0 : _c.innerHTML}/${stationId}/${(_d = one.querySelector("stationSeq")) === null || _d === void 0 ? void 0 : _d.innerHTML}/${sDay}">${(_e = one.querySelector("stationName")) === null || _e === void 0 ? void 0 : _e.innerHTML} ${mobileCode ? `(${mobileCode})` : ``}</a> <a href="geo:${(_f = one.querySelector("y")) === null || _f === void 0 ? void 0 : _f.innerHTML},${(_g = one.querySelector("x")) === null || _g === void 0 ? void 0 : _g.innerHTML}">📍</a></div>`;
     });
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stopItem");
@@ -186,12 +185,13 @@ const routeStopHistory = async (_, rid, sid, sord, date) => {
     if (routeId === "" || stationId === "" || staOrder === "" || sDay === "")
         return;
     if (resultBox.innerHTML == "") {
-        routeStopList(_, routeId);
+        routeStopList(_, routeId, true);
     }
     timetableBox.style.display = "flex";
     timetableShadow.style.display = "block";
     prevLoc = prevLoc ? prevLoc : `#/route/${routeId}`;
-    already = true;
+    if (_)
+        already = true;
     window.location.hash = `#/history/${routeId}/${stationId}/${staOrder}/${sDay}`;
     timetableBox.lastElementChild.innerHTML = "<p>Loading...</p>";
     const doc = await gbis.pastarrival(sDay, routeId, stationId, staOrder);
@@ -224,6 +224,7 @@ keywordBox.addEventListener("keydown", (_) => {
     }
 });
 const initiator = async (_) => {
+    already = true;
     var d = new Date();
     d.setTime(d.getTime() - 86400000);
     dateBox.setAttribute("max", `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`);
@@ -233,14 +234,14 @@ const initiator = async (_) => {
         if (params[1] === "search") {
             var value = decodeURI(params[2]);
             keywordBox.value = value;
-            await routeSearch();
+            await routeSearch(_);
         }
         else if (params[1] === "s-search") {
             var value = decodeURI(params[2]);
             searchMode.checked = true;
             keywordBox.setAttribute("placeholder", "정류소");
             keywordBox.value = value;
-            await stopSearch();
+            await stopSearch(_);
         }
         else if (params[1] === "route") {
             var value = params[2];

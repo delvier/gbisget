@@ -23,7 +23,7 @@ const routeSearch = async (_?: Event) => {
     }
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    already = true;
+    if (_) already = true;
     prevLoc = window.location.hash = `#/search/${value}`;
     var t = Date.now();
     resultBox.innerHTML = "<p>Loading...</p>";
@@ -50,7 +50,7 @@ const routeSearch = async (_?: Event) => {
                 return;
             }
             var exact = one.querySelector("routeName")?.innerHTML === value ;
-            tmp += `<div><p class="routeItem" data-route-id=${one.querySelector("routeId")?.innerHTML}>${exact ? "<b>" : ""}${one.querySelector("routeName")?.innerHTML}${exact ? "</b>" : ""} (${one.querySelector("routeTypeName")?.innerHTML}): ${one.querySelector("stStaNm")?.innerHTML} → ${one.querySelector("edStaNm")?.innerHTML}</p></div>`;
+            tmp += `<div class="routeItem" data-route-id=${one.querySelector("routeId")?.innerHTML}><a href="#/route/${one.querySelector("routeId")?.innerHTML}">${exact ? "<b>" : ""}${one.querySelector("routeName")?.innerHTML}${exact ? "</b>" : ""} (${one.querySelector("routeTypeName")?.innerHTML}): ${one.querySelector("stStaNm")?.innerHTML} → ${one.querySelector("edStaNm")?.innerHTML}</a></div>`
         });
     }
     resultBox.innerHTML = tmp;
@@ -59,13 +59,14 @@ const routeSearch = async (_?: Event) => {
         link.addEventListener("click", routeStopList);
     }
 }
-const routeStopList = async (_?: Event, id?: String) => {
+const routeStopList = async (_?: Event, id?: String, silent?: boolean) => {
     const routeId = id || (_?.target as HTMLElement).dataset.routeId || "";
     if (routeId === "") return;
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    already = true;
-    prevLoc = window.location.hash = `#/route/${routeId}`;
+    if (_) already = true;
+    if (!silent)
+        prevLoc = window.location.hash = `#/route/${routeId}`;
     resultBox.innerHTML = "<p>Loading...</p>";
     const info = await gbis.routeInfo(routeId);
     const doc = await gbis.routeStation(routeId);
@@ -75,10 +76,11 @@ const routeStopList = async (_?: Event, id?: String) => {
     };
     tmp += `<div id="routeInfo"><h2>${info.querySelector("routeName")?.innerHTML} (${info.querySelector("routeTypeName")?.innerHTML}): ${info.querySelector("startStationName")?.innerHTML} → ${info.querySelector("endStationName")?.innerHTML}</h2></div>`;
     const x = doc.querySelectorAll("busRouteStationList");
+    const sDay = dateBox.value || "";
     x.forEach((one) => {
         if (!resultBox) return;
         const mobileCode = one.querySelector("mobileNo")?.innerHTML;
-        tmp += `<div><p class="stopItem" data-route-id=${routeId} data-station-id=${one.querySelector("stationId")?.innerHTML} data-station-seq=${one.querySelector("stationSeq")?.innerHTML}>${one.querySelector("stationName")?.innerHTML} ${mobileCode ? `(${mobileCode})` : ``} <a href="geo:${one.querySelector("y")?.innerHTML},${one.querySelector("x")?.innerHTML}">📍</a></p></div>`;
+        tmp += `<div class="stopItem" data-route-id=${routeId} data-station-id=${one.querySelector("stationId")?.innerHTML} data-station-seq=${one.querySelector("stationSeq")?.innerHTML}><a href="#/history/${routeId}/${one.querySelector("stationId")?.innerHTML}/${one.querySelector("stationSeq")?.innerHTML}/${sDay}">${one.querySelector("stationName")?.innerHTML} ${mobileCode ? `(${mobileCode})` : ``}</a> <a href="geo:${one.querySelector("y")?.innerHTML},${one.querySelector("x")?.innerHTML}">📍</a></div>`
     });
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stopItem");
@@ -96,7 +98,7 @@ const stopSearch = async (_?: Event) => {
     }
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    already = true;
+    if (_) already = true;
     prevLoc = window.location.hash = `#/s-search/${value}`;
     var t = Date.now();
     resultBox.innerHTML = "<p>Loading...</p>";
@@ -114,17 +116,9 @@ const stopSearch = async (_?: Event) => {
         const x = doc.querySelectorAll("busStationList");
         x.forEach((one) => {
             if (!resultBox) return;
-            //var reg: RegExp;
-            //if (value.length == 1) 
-            //    reg = new RegExp(`^([A-Za-z가-힣]*)${escapeRegExp(value)}([-A-Za-z가-힣]*|-[-0-9]*)$`, 'i');
-            //else
-            //reg = new RegExp(`${escapeRegExp(value)}`, 'i');
-            //if (! reg.test(`${one.querySelector("routeName")?.innerHTML}`)) {
-            //    return;
-            //}
             var exact = one.querySelector("stationName")?.innerHTML === value ;
             const mobileCode = one.querySelector("mobileNo")?.innerHTML;
-            tmp += `<div><p class="stationItem" data-station-id=${one.querySelector("stationId")?.innerHTML}>${exact ? "<b>" : ""}${one.querySelector("stationName")?.innerHTML}${exact ? "</b>" : ""} (${one.querySelector("regionName")?.innerHTML}${mobileCode ? `: ${mobileCode}` : ``})</p></div>`;
+            tmp += `<div class="stationItem" data-station-id=${one.querySelector("stationId")?.innerHTML}><a href="#/station/${one.querySelector("stationId")?.innerHTML}">${exact ? "<b>" : ""}${one.querySelector("stationName")?.innerHTML}${exact ? "</b>" : ""} (${one.querySelector("regionName")?.innerHTML}${mobileCode ? `: ${mobileCode}` : ``})</a></div>`
         });
     }
     resultBox.innerHTML = tmp;
@@ -138,7 +132,7 @@ const stopRouteList = async (_?: Event, id?: String) => {
     if (stationId === "") return;
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    already = true;
+    if (_) already = true;
     prevLoc = window.location.hash = `#/station/${stationId}`;
     resultBox.innerHTML = "<p>Loading...</p>";
     const info = await gbis.stationInfo(stationId);
@@ -150,9 +144,10 @@ const stopRouteList = async (_?: Event, id?: String) => {
     const mobileCode = info.querySelector("mobileNo")?.innerHTML;
     tmp += `<div id="stationInfo"><h2>${info.querySelector("stationName")?.innerHTML} (${info.querySelector("regionName")?.innerHTML}${mobileCode ? `: ${mobileCode}` : ``}) <a href="geo:${info.querySelector("y")?.innerHTML},${info.querySelector("x")?.innerHTML}">📍</a></h2></div>`;
     const x = doc.querySelectorAll("busRouteList");
+    const sDay = dateBox.value || "";
     x.forEach((one) => {
         if (!resultBox) return;
-        tmp += `<div><p class="stopItem" data-route-id=${one.querySelector("routeId")?.innerHTML} data-station-id=${stationId} data-station-seq=${one.querySelector("staOrder")?.innerHTML}>${one.querySelector("routeName")?.innerHTML} (→ ${one.querySelector("routeDestName")?.innerHTML})</p></div>`;
+        tmp += `<div class="stopItem" data-route-id=${one.querySelector("routeId")?.innerHTML} data-station-id=${stationId} data-station-seq=${one.querySelector("stationSeq")?.innerHTML}><a href="#/history/${one.querySelector("routeId")?.innerHTML}/${stationId}/${one.querySelector("stationSeq")?.innerHTML}/${sDay}">${one.querySelector("stationName")?.innerHTML} ${mobileCode ? `(${mobileCode})` : ``}</a> <a href="geo:${one.querySelector("y")?.innerHTML},${one.querySelector("x")?.innerHTML}">📍</a></div>`
     });
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stopItem");
@@ -167,12 +162,12 @@ const routeStopHistory = async (_?: Event, rid?: String, sid?: String, sord?: St
     const sDay = date || dateBox.value || "";
     if (routeId === "" || stationId === "" || staOrder === "" || sDay === "") return;
     if (resultBox.innerHTML == "") {
-        routeStopList(_, routeId);
+        routeStopList(_, routeId, true);
     }
     timetableBox.style.display = "flex";
     timetableShadow.style.display = "block";
     prevLoc = prevLoc ? prevLoc : `#/route/${routeId}`;
-    already = true;
+    if (_) already = true;
     window.location.hash = `#/history/${routeId}/${stationId}/${staOrder}/${sDay}`;
     (timetableBox.lastElementChild as Element).innerHTML = "<p>Loading...</p>";
     const doc = await gbis.pastarrival(sDay, routeId, stationId, staOrder);
@@ -200,6 +195,7 @@ keywordBox.addEventListener("keydown", (_) => {
     }
 });
 const initiator = async (_?: Event) => {
+    already = true;
     var d = new Date();
     d.setTime(d.getTime() - 86400_000);
     dateBox.setAttribute("max", `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`);
@@ -209,13 +205,13 @@ const initiator = async (_?: Event) => {
         if (params[1] === "search") {
             var value = decodeURI(params[2]);
             keywordBox.value = value;
-            await routeSearch();
+            await routeSearch(_);
         } else if (params[1] === "s-search") {
             var value = decodeURI(params[2]);
             searchMode.checked = true;
             keywordBox.setAttribute("placeholder", "정류소");
             keywordBox.value = value;
-            await stopSearch();
+            await stopSearch(_);
         } else if (params[1] === "route") {
             var value = params[2];
             await routeStopList(_, value);
@@ -265,5 +261,4 @@ const closeTimetable = (_: Event) => {
     window.location.hash = prevLoc;
 }
 document.getElementById("timetable-close")?.addEventListener("click", closeTimetable);
-
 initiator();
