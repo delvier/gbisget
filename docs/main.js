@@ -24,9 +24,7 @@ const routeSearch = async (_) => {
     }
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    if (_)
-        already = true;
-    prevLoc = window.location.hash = `#/search/${value}`;
+    prevLoc = `#/search/${value}`;
     var t = Date.now();
     resultBox.innerHTML = "<p>Loading...</p>";
     const doc = await gbis.routeMain(value);
@@ -61,7 +59,10 @@ const routeSearch = async (_) => {
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("routeItem");
     for (const link of links) {
-        link.addEventListener("click", routeStopList);
+        link.addEventListener("click", (_) => {
+            const routeId = link.dataset.routeId;
+            window.location.hash = `#/route/${routeId}`;
+        });
     }
 };
 const routeStopList = async (_, id, silent) => {
@@ -71,10 +72,8 @@ const routeStopList = async (_, id, silent) => {
         return;
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    if (_)
-        already = true;
     if (!silent)
-        prevLoc = window.location.hash = `#/route/${routeId}`;
+        prevLoc = `#/route/${routeId}`;
     resultBox.innerHTML = "<p>Loading...</p>";
     const info = await gbis.routeInfo(routeId);
     const doc = await gbis.routeStation(routeId);
@@ -96,7 +95,12 @@ const routeStopList = async (_, id, silent) => {
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stopItem");
     for (const link of links) {
-        link.addEventListener("click", routeStopHistory);
+        link.addEventListener("click", (_) => {
+            const routeId = link.dataset.routeId;
+            const stationId = link.dataset.stationId;
+            const staOrder = link.dataset.stationSeq;
+            window.location.hash = `#/history/${routeId}/${stationId}/${staOrder}/${sDay}`;
+        });
     }
 };
 const stopSearch = async (_) => {
@@ -110,9 +114,7 @@ const stopSearch = async (_) => {
     }
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    if (_)
-        already = true;
-    prevLoc = window.location.hash = `#/s-search/${value}`;
+    prevLoc = `#/s-search/${value}`;
     var t = Date.now();
     resultBox.innerHTML = "<p>Loading...</p>";
     const doc = await gbis.stationMain(value);
@@ -140,7 +142,10 @@ const stopSearch = async (_) => {
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stationItem");
     for (const link of links) {
-        link.addEventListener("click", stopRouteList);
+        link.addEventListener("click", (_) => {
+            const stationId = link.dataset.stationId;
+            window.location.hash = `#/station/${stationId}`;
+        });
     }
 };
 const stopRouteList = async (_, id) => {
@@ -150,9 +155,7 @@ const stopRouteList = async (_, id) => {
         return;
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
-    if (_)
-        already = true;
-    prevLoc = window.location.hash = `#/station/${stationId}`;
+    prevLoc = `#/station/${stationId}`;
     resultBox.innerHTML = "<p>Loading...</p>";
     const info = await gbis.stationInfo(stationId);
     const doc = await gbis.stationRoute(stationId);
@@ -169,12 +172,17 @@ const stopRouteList = async (_, id) => {
         var _a, _b, _c, _d, _e, _f;
         if (!resultBox)
             return;
-        tmp += `<div class="stopItem" data-route-id=${(_a = one.querySelector("routeId")) === null || _a === void 0 ? void 0 : _a.innerHTML} data-station-id=${stationId} data-station-seq=${(_b = one.querySelector("stationSeq")) === null || _b === void 0 ? void 0 : _b.innerHTML}><a href="#/history/${(_c = one.querySelector("routeId")) === null || _c === void 0 ? void 0 : _c.innerHTML}/${stationId}/${(_d = one.querySelector("stationSeq")) === null || _d === void 0 ? void 0 : _d.innerHTML}/${sDay}">${(_e = one.querySelector("routeName")) === null || _e === void 0 ? void 0 : _e.innerHTML} (→ ${(_f = one.querySelector("routeDestName")) === null || _f === void 0 ? void 0 : _f.innerHTML})</a></div>`;
+        tmp += `<div class="stopItem" data-route-id=${(_a = one.querySelector("routeId")) === null || _a === void 0 ? void 0 : _a.innerHTML} data-station-id=${stationId} data-station-seq=${(_b = one.querySelector("staOrder")) === null || _b === void 0 ? void 0 : _b.innerHTML}><a href="#/history/${(_c = one.querySelector("routeId")) === null || _c === void 0 ? void 0 : _c.innerHTML}/${stationId}/${(_d = one.querySelector("staOrder")) === null || _d === void 0 ? void 0 : _d.innerHTML}/${sDay}">${(_e = one.querySelector("routeName")) === null || _e === void 0 ? void 0 : _e.innerHTML} (→ ${(_f = one.querySelector("routeDestName")) === null || _f === void 0 ? void 0 : _f.innerHTML})</a></div>`;
     });
     resultBox.innerHTML = tmp;
     var links = resultBox.getElementsByClassName("stopItem");
     for (const link of links) {
-        link.addEventListener("click", routeStopHistory);
+        link.addEventListener("click", (_) => {
+            const routeId = link.dataset.routeId;
+            const stationId = link.dataset.stationId;
+            const staOrder = link.dataset.stationSeq;
+            window.location.hash = `#/history/${routeId}/${stationId}/${staOrder}/${sDay}`;
+        });
     }
 };
 const routeStopHistory = async (_, rid, sid, sord, date) => {
@@ -190,9 +198,7 @@ const routeStopHistory = async (_, rid, sid, sord, date) => {
     timetableBox.style.display = "flex";
     timetableShadow.style.display = "block";
     prevLoc = prevLoc ? prevLoc : `#/route/${routeId}`;
-    if (_)
-        already = true;
-    window.location.hash = `#/history/${routeId}/${stationId}/${staOrder}/${sDay}`;
+    already = true;
     timetableBox.lastElementChild.innerHTML = "<p>Loading...</p>";
     const doc = await gbis.pastarrival(sDay, routeId, stationId, staOrder);
     const x = doc.querySelectorAll("pastArrivalList");
@@ -234,7 +240,6 @@ searchMode.addEventListener("change", (_) => {
     }
 });
 const initiator = async (_) => {
-    already = true;
     var d = new Date();
     d.setTime(d.getTime() - 86400000);
     dateBox.setAttribute("max", `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`);
@@ -292,7 +297,7 @@ window.addEventListener("hashchange", (_) => {
     keywordBox.value = "";
     resultBox.innerHTML = "";
 });
-const closeTimetable = (_) => {
+const closeTimetable = async (_) => {
     timetableBox.style.display = "none";
     timetableShadow.style.display = "none";
     timetableShadow.removeEventListener("click", closeTimetable);
