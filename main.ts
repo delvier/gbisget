@@ -217,10 +217,10 @@ keywordBox.addEventListener("keydown", (_) => {
 searchMode.addEventListener("change", (_) => {
     if (searchMode.checked) {
         keywordBox.setAttribute("placeholder", "정류소");
-        stopSearch(_);
+        window.location.hash = `#/s-search/${keywordBox.value}`;
     } else {
         keywordBox.setAttribute("placeholder", "노선 번호");
-        routeSearch(_);
+        window.location.hash = `#/search/${keywordBox.value}`;
     }
 })
 const initiator = async (_?: Event) => {
