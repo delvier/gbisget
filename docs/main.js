@@ -197,6 +197,7 @@ const routeStopHistory = async (_, rid, sid, sord, date) => {
     }
     timetableBox.style.display = "flex";
     timetableShadow.style.display = "block";
+    dateBox.value = sDay;
     prevLoc = (prevLoc !== window.location.hash) ? prevLoc : `#/route/${routeId}`;
     already = true;
     timetableBox.lastElementChild.innerHTML = "<p>Loading...</p>";
@@ -214,7 +215,7 @@ const routeStopHistory = async (_, rid, sid, sord, date) => {
 dateBox.addEventListener("change", (_) => {
     var params = window.location.hash.split("/");
     //routeStopHistory(_, params[2], params[3], params[4], dateBox.value);
-    window.location.hash = `#/${params[2]}/${params[3]}/${params[4]}/${dateBox.value}`;
+    window.location.hash = `#/history/${params[2]}/${params[3]}/${params[4]}/${dateBox.value}`;
 });
 keywordBox.addEventListener("input", (_) => {
     if (searchMode.checked) {
@@ -247,8 +248,8 @@ searchMode.addEventListener("change", (_) => {
 const initiator = async (_) => {
     var d = new Date();
     d.setTime(d.getTime() - 86400000);
-    dateBox.setAttribute("max", `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`);
-    dateBox.setAttribute("value", `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`);
+    dateBox.setAttribute("max", `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`);
+    dateBox.setAttribute("value", `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`);
     if (window.location.hash.startsWith("#/")) {
         var params = window.location.hash.split("/");
         if (params[1] === "search") {
@@ -278,7 +279,7 @@ const initiator = async (_) => {
             var sid = params[3];
             var sord = params[4];
             var date;
-            if (params.length === 5)
+            if (params.length === 5 || params[5] == "")
                 date = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
             else
                 date = params[5];
