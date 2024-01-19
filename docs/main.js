@@ -215,6 +215,7 @@ const routeStopHistory = async (_, rid, sid, sord, date) => {
 dateBox.addEventListener("change", (_) => {
     var params = window.location.hash.split("/");
     //routeStopHistory(_, params[2], params[3], params[4], dateBox.value);
+    already = false;
     window.location.hash = `#/history/${params[2]}/${params[3]}/${params[4]}/${dateBox.value}`;
 });
 keywordBox.addEventListener("input", (_) => {
